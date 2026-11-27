@@ -140,6 +140,9 @@ app/                Streamlit: Home (chat), Quiz Duel, Eval Dashboard
 tests/
 ```
 
+## License
+[MIT](LICENSE). The code and the lore of Veyra are both free to use, modify, and share.
+
 ## Ideas to extend
 - Add a reranker (e.g. a fastembed cross-encoder) and measure the gain on `multi_hop`.
 - Write more lore, and check that `unanswerable` items stay unanswerable.

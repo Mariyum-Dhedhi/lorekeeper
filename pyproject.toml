@@ -3,6 +3,8 @@ name = "lorekeeper"
 version = "0.1.0"
 description = "A LangGraph RAG agent that guards the archives of a fictional world, with an eval set and a quiz duel."
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
 dependencies = [
     "langgraph>=0.2",
