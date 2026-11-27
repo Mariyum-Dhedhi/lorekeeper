@@ -10,7 +10,7 @@ services:
         condition: service_healthy
     environment:
       VECTOR_STORE: pgvector
-      DATABASE_URL: postgresql://lorekeeper:lorekeeper@db:5432/lorekeeper
+      DATABASE_URL: postgresql://lorekeeper:${POSTGRES_PASSWORD:-lorekeeper}@db:5432/lorekeeper
       LLM_PROVIDER: ${LLM_PROVIDER:-ollama}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b}
       OLLAMA_BASE_URL: http://host.docker.internal:11434
@@ -27,7 +27,8 @@ services:
     image: pgvector/pgvector:pg17
     environment:
       POSTGRES_USER: lorekeeper
-      POSTGRES_PASSWORD: lorekeeper   # local development only
+      # A development default; set POSTGRES_PASSWORD in your shell or .env to override it.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lorekeeper}
       POSTGRES_DB: lorekeeper
     ports:
       - "127.0.0.1:5432:5432"          # only reachable from this machine
