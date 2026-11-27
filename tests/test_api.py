@@ -91,6 +91,7 @@ def test_stream_reports_errors(client_with):
     client, log = client_with([])  # the fake LLM has nothing to say -> raises
     events = parse_sse(client.post("/ask/stream", json={"question": "anything"}).text)
     assert events[-1][0] == "error"
+    assert "Check the server log" in events[-1][1]["detail"]  # no internal error text leaks
     assert log.rows == []
 
 

@@ -5,6 +5,7 @@ Docs:  http://127.0.0.1:8000/docs
 """
 
 import json
+import logging
 import re
 import time
 from collections.abc import Iterator
@@ -22,6 +23,7 @@ from lorekeeper.llm import provider_label
 
 Question = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=1000)]
 RUN_NAME = re.compile(r"[\w.-]{1,200}")
+log = logging.getLogger("lorekeeper.api")
 
 
 # ---------- request / response models ----------
@@ -213,8 +215,11 @@ def stream_events(agent, qlog: QueryLog, question: str) -> Iterator[str]:
                 trace += lines
                 state.update({k: v for k, v in delta.items() if k != "trace"})
                 yield sse("step", {"node": node, "steps": trace_steps(lines)})
-    except Exception as e:  # e.g. the LLM is not running; the client still gets a clean end
-        yield sse("error", {"detail": str(e)})
+    except Exception:  # e.g. the LLM is not running; the client still gets a clean end
+        # The details stay in the server log: exception text can carry hostnames or
+        # connection strings that a client shouldn't see.
+        log.exception("agent run failed during /ask/stream")
+        yield sse("error", {"detail": "The agent failed to answer. Check the server log."})
         return
     result = {
         "question": question,
