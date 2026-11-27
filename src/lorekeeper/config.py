@@ -25,6 +25,7 @@ class Settings(BaseSettings):
 
     llm_provider: Provider = "ollama"
     judge_provider: Provider | None = None
+    checker_provider: Provider | None = None  # model for the checking agent; defaults to llm_provider
 
     ollama_model: str = "qwen2.5:7b"
     ollama_base_url: str = "http://localhost:11434"
