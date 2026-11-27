@@ -93,9 +93,26 @@ def build_index(index_dir: Path = INDEX_DIR) -> int:
     return len(chunks)
 
 
+def build_pgvector_index() -> int:
+    from lorekeeper.pgstore import build_pg_index
+    from lorekeeper.retriever import get_embeddings
+
+    return build_pg_index(load_chunks(), get_embeddings(), get_settings().database_url)
+
+
 def main() -> None:
-    n = build_index()
-    print(f"Indexed {n} chunks from {len(list(LORE_DIR.glob('*.md')))} lore documents -> {INDEX_DIR}")
+    import argparse
+
+    p = argparse.ArgumentParser(description="Build the Lorekeeper index")
+    p.add_argument("--store", choices=["chroma", "pgvector"], help="defaults to VECTOR_STORE from .env")
+    store = p.parse_args().store or get_settings().vector_store
+    n_docs = len(list(LORE_DIR.glob("*.md")))
+    if store == "pgvector":
+        n = build_pgvector_index()
+        print(f"Indexed {n} chunks from {n_docs} lore documents -> PostgreSQL table 'chunks'")
+    else:
+        n = build_index()
+        print(f"Indexed {n} chunks from {n_docs} lore documents -> {INDEX_DIR}")
 
 
 if __name__ == "__main__":

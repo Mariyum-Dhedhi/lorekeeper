@@ -121,6 +121,7 @@ def main() -> None:
         "judge": provider_label(s.judge_provider),
         "top_k": k,
         "hybrid": hybrid,
+        "vector_store": s.vector_store,
         "n_items": len(items),
     }
     print(f"Evaluating {len(items)} items with {config}")
@@ -137,7 +138,8 @@ def main() -> None:
 
     EVAL_RESULTS.mkdir(parents=True, exist_ok=True)
     provider_slug = re.sub(r"[^\w.]+", "-", config["provider"])
-    name = f"{datetime.now():%Y%m%d-%H%M%S}_{provider_slug}_k{k}_{'hybrid' if hybrid else 'dense'}"
+    store = "" if s.vector_store == "chroma" else f"_{s.vector_store}"
+    name = f"{datetime.now():%Y%m%d-%H%M%S}_{provider_slug}_k{k}_{'hybrid' if hybrid else 'dense'}{store}"
     out = EVAL_RESULTS / f"{name}{'_' + args.tag if args.tag else ''}.json"
     out.write_text(
         json.dumps({"config": config, "summary": summary, "rows": rows,
