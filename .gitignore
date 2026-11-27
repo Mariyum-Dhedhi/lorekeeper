@@ -2,6 +2,10 @@
 __pycache__/
 *.pyc
 .env
+.env.*
+!.env.example
+*.pem
+*.key
 .cache/
 index/
 eval/results/*.json

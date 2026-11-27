@@ -40,6 +40,13 @@ def get_embeddings() -> FastEmbedEmbeddings:
     return _embeddings
 
 
+def chroma_settings():
+    """Embedded, local-only Chroma with its anonymous usage telemetry switched off."""
+    from chromadb.config import Settings
+
+    return Settings(anonymized_telemetry=False, is_persistent=True)
+
+
 def tokenize(text: str) -> list[str]:
     return re.findall(r"[a-z0-9']+", text.lower())
 
@@ -72,6 +79,7 @@ class HybridRetriever:
             collection_name=COLLECTION,
             embedding_function=get_embeddings(),
             persist_directory=str(index_dir / "chroma"),
+            client_settings=chroma_settings(),
         )
 
     def dense_ids(self, query: str, n: int) -> list[str]:

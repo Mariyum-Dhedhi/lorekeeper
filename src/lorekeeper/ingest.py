@@ -71,7 +71,7 @@ def slugify(text: str) -> str:
 def build_index(index_dir: Path = INDEX_DIR) -> int:
     from langchain_chroma import Chroma
 
-    from lorekeeper.retriever import get_embeddings
+    from lorekeeper.retriever import chroma_settings, get_embeddings
 
     chunks = load_chunks()
     if index_dir.exists():
@@ -84,6 +84,7 @@ def build_index(index_dir: Path = INDEX_DIR) -> int:
         ids=[c.metadata["id"] for c in chunks],
         collection_name=COLLECTION,
         persist_directory=str(index_dir / "chroma"),
+        client_settings=chroma_settings(),
     )
     (index_dir / CHUNKS_FILE).write_text(
         json.dumps([{"text": c.page_content, "metadata": c.metadata} for c in chunks], indent=1),

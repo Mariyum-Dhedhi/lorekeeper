@@ -1,0 +1,6 @@
+[server]
+# Only reachable from this machine. Remove this line deliberately if you want to share on your network.
+address = "localhost"
+
+[browser]
+gatherUsageStats = false
