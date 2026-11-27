@@ -11,3 +11,6 @@ index/
 eval/results/*.json
 highscores.json
 .pytest_cache/
+
+# /brag launch-video working files (the final video is copied to docs/media)
+brag-output*/

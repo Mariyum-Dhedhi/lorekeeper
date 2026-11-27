@@ -14,6 +14,12 @@
 
 [Quick start](#-quick-start) · [How it works](#-how-it-works) · [API](#-the-api) · [Evaluation](#-evaluation) · [Quiz Duel](#%EF%B8%8F-quiz-duel) · [Design notes](#-design-notes-and-honest-limits)
 
+<br>
+
+<a href="docs/media/lorekeeper-launch.mp4"><img src="docs/media/lorekeeper-demo.gif" width="760" alt="Lorekeeper catching a false premise: asked why sky-whales migrate every seven years, it answers that the archives say every eleven years, with a citation"></a>
+
+**▶️ [Watch the 22-second launch video, with sound](docs/media/lorekeeper-launch.mp4)**
+
 </div>
 
 ---
@@ -22,6 +28,19 @@ Veyra is an island realm of guilds, sky-whales and one ill-advised war. It is **
 
 > [!TIP]
 > Everything runs **for free**. The LLM runs locally (Ollama), Groq's free tier is optional, the embeddings run locally, and PostgreSQL runs in Docker.
+
+## 📸 A look inside
+
+<table>
+<tr>
+<td width="50%"><img src="docs/images/chat.png" alt="The chat page: a corrected false premise with its citation, and the agent graph with the steps that ran highlighted"><br><sub><b>Chat.</b> Each answer comes with its evidence and a live graph of the steps that ran.</sub></td>
+<td width="50%"><img src="docs/images/quiz-duel.png" alt="The Quiz Duel start screen with scoring rules and ranks"><br><sub><b>Quiz Duel.</b> You against the agent: 10 questions, a 30-second clock and ranks.</sub></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/images/eval-dashboard.png" alt="The Eval Dashboard showing 0.9 correctness, 1.0 hit@k and per-type bars"><br><sub><b>Eval Dashboard.</b> Pick a run, or two to compare.</sub></td>
+<td width="50%"><img src="docs/images/api-docs.png" alt="FastAPI's interactive docs listing the health, ask, stream and eval endpoints"><br><sub><b>API.</b> FastAPI's interactive docs at <code>/docs</code>.</sub></td>
+</tr>
+</table>
 
 ## 🧭 Pick your path
 
@@ -132,6 +151,12 @@ flowchart TB
 | 🛡️ Checking | `check_grounded` | Hallucination check. If the answer is unsupported, it regenerates once with a stricter prompt |
 
 **Why separate agents?** The checking agent can run on a **different model** (`CHECKER_PROVIDER`), so an answer isn't only checked by the model that wrote it. Each agent also gets a small state with only what it needs. Every step is tagged with the agent that ran it, in the API and in the app, where the trace panel draws the two agents as clusters.
+
+<details>
+<summary><b>🖼️ The same graph as the app draws it</b> (amber = steps that ran for a false-premise question)</summary>
+<br>
+<img src="docs/images/agent-graph.png" width="560" alt="Graphviz drawing of the agent graph with the retrieval and checking agents as dashed clusters">
+</details>
 
 <details>
 <summary><b>🗄️ The two vector stores</b></summary>
@@ -387,3 +412,5 @@ Dockerfile · docker-compose.yml
 ## License
 
 [MIT](LICENSE). The code and the lore of Veyra are both free to use, modify and share.
+
+The launch video was made with [/brag](https://github.com/latent-spaces/brag). Music: "Happy Beats / Business Moves Vol. 10" by Sascha Ende, [ende.app](https://ende.app/en) ([CC BY 4.0](https://ende.app/en/standard-license)).
