@@ -16,6 +16,7 @@ USER_SUBMITTED = EVAL_DIR / "user_submitted.jsonl"
 HIGHSCORES = PROJECT_ROOT / "highscores.json"
 
 Provider = Literal["ollama", "groq"]
+VectorStore = Literal["chroma", "pgvector"]
 
 
 class Settings(BaseSettings):
@@ -25,6 +26,7 @@ class Settings(BaseSettings):
 
     llm_provider: Provider = "ollama"
     judge_provider: Provider | None = None
+    checker_provider: Provider | None = None  # model for the checking agent; defaults to llm_provider
 
     ollama_model: str = "qwen2.5:7b"
     ollama_base_url: str = "http://localhost:11434"
@@ -37,6 +39,10 @@ class Settings(BaseSettings):
     hybrid: bool = True
     chunk_size: int = 700
     chunk_overlap: int = 100
+
+    # Where the vectors live: embedded Chroma (default, no setup) or PostgreSQL + pgvector
+    vector_store: VectorStore = "chroma"
+    database_url: str = "postgresql://lorekeeper:lorekeeper@127.0.0.1:5432/lorekeeper"
 
 
 @lru_cache

@@ -99,9 +99,19 @@ class HybridRetriever:
         return [self.chunks[i] for i in ids[: self.k]]
 
 
-def load_retriever(k: int | None = None, hybrid: bool | None = None) -> HybridRetriever:
-    """Load the index, building it first if it doesn't exist yet."""
-    from lorekeeper.ingest import CHUNKS_FILE, build_index
+def load_retriever(k: int | None = None, hybrid: bool | None = None, store: str | None = None) -> Retriever:
+    """Load the index for the configured vector store, building it first if it doesn't exist yet."""
+    from lorekeeper.ingest import CHUNKS_FILE, build_index, build_pgvector_index
+
+    s = get_settings()
+    if (store or s.vector_store) == "pgvector":
+        from lorekeeper.pgstore import PgVectorRetriever, table_size
+
+        if table_size(s.database_url) == 0:
+            build_pgvector_index()
+        return PgVectorRetriever(
+            s.database_url, get_embeddings(), k=k or s.top_k, hybrid=s.hybrid if hybrid is None else hybrid
+        )
 
     if not (INDEX_DIR / CHUNKS_FILE).exists():
         build_index()

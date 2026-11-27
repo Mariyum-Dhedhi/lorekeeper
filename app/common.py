@@ -24,6 +24,11 @@ EDGES = [
     ("check_grounded", "END", "grounded"),
     ("check_grounded", "generate", "retry once"),
 ]
+# The two agents the orchestrator hands work to (see lorekeeper.graph).
+CLUSTERS = [
+    ("retrieval", "Retrieval agent", ["retrieve", "grade_docs", "rewrite_query"]),
+    ("checking", "Checking agent", ["check_premise", "check_grounded"]),
+]
 
 
 @st.cache_resource(show_spinner="Opening the archives (first run builds the index)...")
@@ -47,7 +52,7 @@ def sidebar_badge() -> None:
     s = get_settings()
     with st.sidebar:
         st.caption("Archive engine")
-        st.code(f"LLM    {provider_label()}\nJudge  {provider_label(s.judge_provider)}\nTop-k  {s.top_k}\nSearch {'hybrid (dense+BM25)' if s.hybrid else 'dense only'}", language=None)
+        st.code(f"LLM     {provider_label()}\nChecker {provider_label(s.checker_provider)}\nJudge   {provider_label(s.judge_provider)}\nTop-k   {s.top_k}\nSearch  {'hybrid (dense+BM25)' if s.hybrid else 'dense only'}", language=None)
         st.caption("Change these in `.env`")
 
 
@@ -67,6 +72,11 @@ def graph_dot(trace: list[str] | None = None) -> str:
     for n in NODES:
         if n in seen:
             lines.append(f'{n} [fillcolor="#fde68a" color="#d97706" penwidth=2];')
+    for name, title, members in CLUSTERS:
+        lines.append(
+            f'subgraph cluster_{name} {{ label="{title}"; style="rounded,dashed"; color="#94a3b8"; '
+            f'fontname="Helvetica"; fontsize=10; fontcolor="#64748b"; {"; ".join(members)}; }}'
+        )
     for a, b, lab in EDGES:
         lines.append(f'{a} -> {b} [label="{lab}"];')
     lines.append("}")

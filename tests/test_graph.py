@@ -89,3 +89,46 @@ def test_false_premise_switches_prompt():
     assert any(t.startswith("check_premise: FALSE") for t in res["trace"])
     assert res["answer"].startswith("Actually")
     assert not res["refused"]
+
+
+class CountingFake(FakeListChatModel):
+    """A fake LLM that remembers which system prompts it was called with."""
+
+    calls: list = []
+
+    def invoke(self, messages, *args, **kwargs):
+        self.calls.append(messages[0].content[:40])
+        return super().invoke(messages, *args, **kwargs)
+
+
+def test_checking_agent_uses_its_own_model():
+    from lorekeeper import prompts
+
+    writer = CountingFake(responses=["lore", "1", "Corvin Ashe did [rulers#corvin-ashe]."], calls=[])
+    checker = CountingFake(responses=["ok", "yes"], calls=[])
+    graph = build_graph(writer, FakeRetriever(DOCS), checker_llm=checker)
+    res = ask(graph, "Who negotiated the Treaty of Lanterns?")
+
+    assert res["grounded"] is True
+    assert res["citations"] == ["rulers#corvin-ashe"]
+    assert checker.calls == [prompts.PREMISE[:40], prompts.GROUNDED[:40]]
+    assert prompts.PREMISE[:40] not in writer.calls
+    assert prompts.GROUNDED[:40] not in writer.calls
+    assert len(writer.calls) == 3  # route, grade, generate
+
+
+def test_steps_are_tagged_with_their_agent():
+    res, _ = run(["lore", "1", "FALSE: Ashe never sailed.", "Actually, no [rulers#corvin-ashe].", "yes"])
+    agents = [s["agent"] for s in res["steps"]]
+    assert agents == ["orchestrator", "retrieval", "retrieval", "checking", "orchestrator", "checking"]
+    assert res["premise"] == "Ashe never sailed."
+
+
+def test_retrieval_agent_runs_on_its_own():
+    from lorekeeper.graph import build_retrieval_agent
+
+    agent = build_retrieval_agent(FakeListChatModel(responses=["NONE", "treaty lanterns", "2"]), FakeRetriever(DOCS))
+    out = agent.invoke({"question": "q", "query": "q", "attempts": 0, "trace": []})
+    assert out["attempts"] == 2
+    assert out["query"] == "treaty lanterns"
+    assert [d.metadata["source"] for d in out["relevant_docs"]] == ["culture"]

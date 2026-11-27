@@ -1,0 +1,22 @@
+# PostgreSQL with the pgvector extension.
+#   docker compose up -d db
+# Then set VECTOR_STORE=pgvector in .env and run: uv run python -m lorekeeper.ingest
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: lorekeeper
+      POSTGRES_PASSWORD: lorekeeper   # local development only
+      POSTGRES_DB: lorekeeper
+    ports:
+      - "127.0.0.1:5432:5432"          # only reachable from this machine
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lorekeeper -d lorekeeper"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:

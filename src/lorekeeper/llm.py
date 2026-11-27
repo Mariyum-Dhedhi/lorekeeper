@@ -32,6 +32,11 @@ def get_judge_llm() -> BaseChatModel:
     return get_llm(s.judge_provider or s.llm_provider)
 
 
+def get_checker_llm() -> BaseChatModel:
+    s = get_settings()
+    return get_llm(s.checker_provider or s.llm_provider)
+
+
 def provider_label(provider: Provider | None = None) -> str:
     s = get_settings()
     provider = provider or s.llm_provider
