@@ -2,51 +2,50 @@
 
 # 📜 Lorekeeper
 
-**A multi-agent RAG system that guards the archives of an invented world, and tells you when they don't say.**
+**A question-answering agent for an invented world. It cites the passage behind each answer, and says so when the documents don't cover a question.**
 
 [![tests](https://github.com/Mariyum-Dhedhi/lorekeeper/actions/workflows/tests.yml/badge.svg)](https://github.com/Mariyum-Dhedhi/lorekeeper/actions/workflows/tests.yml)
 ![Python](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
-![LangGraph](https://img.shields.io/badge/LangGraph-multi--agent-1C3C3C)
+![LangGraph](https://img.shields.io/badge/LangGraph-0.2%2B-1C3C3C)
 ![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-pgvector-4169E1?logo=postgresql&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
-![Cost](https://img.shields.io/badge/cost-%240-brightgreen)
 
-[Quick start](#-quick-start) · [How it works](#-how-it-works) · [API](#-the-api) · [Evaluation](#-evaluation) · [Quiz Duel](#%EF%B8%8F-quiz-duel) · [Design notes](#-design-notes-and-honest-limits)
+[Quick start](#-quick-start) · [How it works](#-how-it-works) · [API](#-the-api) · [Evaluation](#-evaluation) · [Quiz Duel](#%EF%B8%8F-quiz-duel) · [Design notes](#-design-notes-and-limits)
 
 <br>
 
 <a href="docs/media/lorekeeper-launch.mp4"><img src="docs/media/lorekeeper-demo.gif" width="760" alt="Lorekeeper catching a false premise: asked why sky-whales migrate every seven years, it answers that the archives say every eleven years, with a citation"></a>
 
-**▶️ [Watch the 22-second launch video, with sound](docs/media/lorekeeper-launch.mp4)**
+**▶️ [Watch the 22-second video, with sound](docs/media/lorekeeper-launch.mp4)**
 
 </div>
 
 ---
 
-Veyra is an island realm of guilds, sky-whales and one ill-advised war. It is **fictional on purpose**: no LLM memorised it during training, so the 40-question eval measures **retrieval and grounding**, not trivia recall.
+The documents describe Veyra, an invented island realm of guilds, sky-whales and one ill-advised war. It is fictional on purpose: no model saw it during training, so the 40-question eval can only be passed by finding the right passage and answering from it, not from memory.
 
 > [!TIP]
-> Everything runs **for free**. The LLM runs locally (Ollama), Groq's free tier is optional, the embeddings run locally, and PostgreSQL runs in Docker.
+> No paid services are needed. The language model and the embeddings run locally (Ollama, fastembed), Groq's free tier is optional, and PostgreSQL runs in Docker.
 
-## 📸 A look inside
+## 📸 Screenshots
 
 <table>
 <tr>
-<td width="50%"><img src="docs/images/chat.png" alt="The chat page: a corrected false premise with its citation, and the agent graph with the steps that ran highlighted"><br><sub><b>Chat.</b> Each answer comes with its evidence and a live graph of the steps that ran.</sub></td>
+<td width="50%"><img src="docs/images/chat.png" alt="The chat page: a corrected false premise with its citation, and the agent graph with the steps that ran highlighted"><br><sub><b>Chat.</b> Each answer shows the passages it used and a graph of the steps that ran.</sub></td>
 <td width="50%"><img src="docs/images/quiz-duel.png" alt="The Quiz Duel start screen with scoring rules and ranks"><br><sub><b>Quiz Duel.</b> You against the agent: 10 questions, a 30-second clock and ranks.</sub></td>
 </tr>
 <tr>
 <td width="50%"><img src="docs/images/eval-dashboard.png" alt="The Eval Dashboard showing 0.9 correctness, 1.0 hit@k and per-type bars"><br><sub><b>Eval Dashboard.</b> Pick a run, or two to compare.</sub></td>
-<td width="50%"><img src="docs/images/api-docs.png" alt="FastAPI's interactive docs listing the health, ask, stream and eval endpoints"><br><sub><b>API.</b> FastAPI's interactive docs at <code>/docs</code>.</sub></td>
+<td width="50%"><img src="docs/images/api-docs.png" alt="FastAPI's generated docs listing the health, ask, stream and eval endpoints"><br><sub><b>API.</b> FastAPI's generated docs at <code>/docs</code>.</sub></td>
 </tr>
 </table>
 
-## 🧭 Pick your path
+## 🧭 What you can run
 
 | I want to… | Do this | Needs |
 |---|---|---|
-| 💬 **Chat** with the Lorekeeper and watch it think | `uv run streamlit run app/Home.py` | Ollama |
+| 💬 **Chat** with the agent and see each step it took | `uv run streamlit run app/Home.py` | Ollama |
 | ⚔️ **Play** the Quiz Duel against it | Streamlit, then the *Quiz Duel* page | Ollama |
 | 🔌 **Call it over HTTP** | `uv run uvicorn lorekeeper.api:app` → [`/docs`](http://127.0.0.1:8000/docs) | Ollama |
 | 🐘 **Use PostgreSQL + pgvector** | `docker compose up -d db`, set `VECTOR_STORE=pgvector` | Docker |
@@ -90,25 +89,25 @@ The API container talks to Ollama on your host through `host.docker.internal`. B
 </details>
 
 <details>
-<summary><b>⚡ With Groq (free tier, faster and stronger)</b></summary>
+<summary><b>⚡ With Groq (free tier, larger hosted models)</b></summary>
 
 1. Get a free key at https://console.groq.com/keys.
 2. In `.env`, set `LLM_PROVIDER=groq` and `GROQ_API_KEY=...`.
 3. Check https://console.groq.com/docs/models for current model names, and set `GROQ_MODEL` if the default has been retired.
 
-You can also keep the agent local and use Groq only where independence matters:
+You can also keep the agent local and use Groq only for the parts that check its work:
 
 | Setting | Effect |
 |---|---|
 | `CHECKER_PROVIDER=groq` | The **checking agent** runs on Groq, so answers aren't checked by the model that wrote them |
-| `JUDGE_PROVIDER=groq` | The **eval judge** runs on Groq, which gives a stronger, independent grader |
+| `JUDGE_PROVIDER=groq` | The **eval judge** runs on Groq, so the agent isn't graded by its own model |
 
 The free tier has rate limits. If a full eval run hits them, use `--limit`.
 </details>
 
 ## 🧠 How it works
 
-An **orchestrator** routes each message and writes the answer. It hands work to two agents, each compiled as **its own LangGraph subgraph with its own state**:
+A main graph routes each message and writes the answer. It hands two jobs to separate agents, each a **LangGraph subgraph with its own state**:
 
 ```mermaid
 flowchart TB
@@ -142,15 +141,15 @@ flowchart TB
 
 | Agent | Node | What it does |
 |---|---|---|
-| Orchestrator | `route` | Decides whether the message is a lore question or small talk |
-| 🔎 Retrieval | `retrieve` | Hybrid search: dense vectors fused with keyword search via reciprocal rank fusion |
+| Main graph | `route` | Decides whether the message is a lore question or small talk |
+| 🔎 Retrieval | `retrieve` | Runs a vector search and a keyword search and merges the two rankings (reciprocal rank fusion) |
 | 🔎 Retrieval | `grade_docs` | The LLM marks the useful passages. It decides whether to search again, but it can't *drop* passages, because small models discard the second half of multi-hop answers |
 | 🔎 Retrieval | `rewrite_query` | If nothing is useful, rephrases the question and searches again (once) |
 | 🛡️ Checking | `check_premise` | Catches false assumptions ("Why do sky-whales migrate every *seven* years?") and switches `generate` to a correction prompt |
-| Orchestrator | `generate` | Answers only from the passages, with `[doc#section]` citations, or refuses: *"The archives hold no record of that."* |
-| 🛡️ Checking | `check_grounded` | Hallucination check. If the answer is unsupported, it regenerates once with a stricter prompt |
+| Main graph | `generate` | Answers only from the passages, with `[doc#section]` citations, or refuses: *"The archives hold no record of that."* |
+| 🛡️ Checking | `check_grounded` | Checks that the passages support the answer. If not, the answer is written again once with a stricter prompt |
 
-**Why separate agents?** The checking agent can run on a **different model** (`CHECKER_PROVIDER`), so an answer isn't only checked by the model that wrote it. Each agent also gets a small state with only what it needs. Every step is tagged with the agent that ran it, in the API and in the app, where the trace panel draws the two agents as clusters.
+**Why separate agents?** The checking agent can run on a **different model** (`CHECKER_PROVIDER`), so an answer isn't only checked by the model that wrote it. Each agent also gets a small state with only what it needs. Every step is tagged with the part that ran it (`orchestrator` for the main graph, `retrieval` or `checking`), in the API and in the app, where the trace panel draws the two agents as boxes.
 
 <details>
 <summary><b>🖼️ The same graph as the app draws it</b> (amber = steps that ran for a false-premise question)</summary>
@@ -169,13 +168,13 @@ flowchart TB
 | Setup | none | `docker compose up -d db` |
 | Also stores | | a `queries` log of every API question (answer, citations, latency, trace as `jsonb`) |
 
-Embeddings are `BAAI/bge-small-en-v1.5` (384 dimensions) via fastembed: local ONNX, no torch, no API.
+Embeddings are `BAAI/bge-small-en-v1.5` (384 dimensions) via fastembed. They run locally on ONNX, without PyTorch or an API.
 </details>
 
 ## 🔌 The API
 
 ```powershell
-uv run uvicorn lorekeeper.api:app --reload          # interactive docs: http://127.0.0.1:8000/docs
+uv run uvicorn lorekeeper.api:app --reload          # docs: http://127.0.0.1:8000/docs
 ```
 
 | Method | Path | Returns |
@@ -190,7 +189,7 @@ sequenceDiagram
     autonumber
     participant C as Client
     participant API as FastAPI
-    participant O as Orchestrator
+    participant O as Main graph
     participant R as Retrieval agent
     participant K as Checking agent
     participant DB as PostgreSQL + pgvector
@@ -336,7 +335,7 @@ You against the Lorekeeper, 10 questions, a 30-second clock.
 
 - The agent starts searching the moment a question appears, while you type.
 - A judge scores you both. You get points for correctness, a speed bonus, and streak multipliers up to ×2.
-- The Lorekeeper delivers an in-character taunt or concession after each round.
+- After each round the agent replies in character, teasing you or conceding.
 - Ranks: **Driftling → Tide Apprentice → Guild Scribe → Archivist → Keeper of Veyra**. The leaderboard is saved to `highscores.json`.
 - **Stump the Lorekeeper:** write your own question. If the agent gets it wrong or bluffs, you get **+150** and the question joins `eval/user_submitted.jsonl`, so playing the game grows the eval set.
 - The quiz bank is kept separate from the eval set, so the agent isn't tuned on its own test.
@@ -374,11 +373,11 @@ uv run pytest tests/test_pgvector.py                            # against real P
 CI runs two jobs: `test` (fake LLM) and `pgvector` (a `pgvector/pgvector:pg17` service container).
 </details>
 
-## 🔍 Design notes and honest limits
+## 🔍 Design notes and limits
 
-- **A fictional corpus** keeps the eval honest: the model can't answer from memory.
+- **Invented documents** mean the model can't answer from memory, so the eval tests retrieval and answering from passages.
 - **The grader can't drop passages.** v2 showed a 7B grader discarding the second document of multi-hop questions.
-- **Refusal is a feature.** Unanswerable questions score 1 only if the agent refuses.
+- **Refusing can be the right answer.** Unanswerable questions score 1 only if the agent refuses.
 - **Limits:** the corpus is small (12 documents, 59 chunks), the default judge is the agent's own model, and the remaining misses are mostly date arithmetic and multi-hop chains the 7B model doesn't finish.
 
 <details>
@@ -389,7 +388,7 @@ data/lore/            12 lore documents (edit or add your own, then re-run inges
 data/quiz_bank.json   quiz questions
 eval/                 dataset.jsonl, user_submitted.jsonl, results/
 src/lorekeeper/
-  graph.py            orchestrator + retrieval agent + checking agent
+  graph.py            main graph + retrieval agent + checking agent
   retriever.py        Chroma + BM25 hybrid retrieval
   pgstore.py          PostgreSQL + pgvector store, in-database hybrid search
   api.py              FastAPI service
@@ -413,4 +412,4 @@ Dockerfile · docker-compose.yml
 
 [MIT](LICENSE). The code and the lore of Veyra are both free to use, modify and share.
 
-The launch video was made with [/brag](https://github.com/latent-spaces/brag). Music: "Happy Beats / Business Moves Vol. 10" by Sascha Ende, [ende.app](https://ende.app/en) ([CC BY 4.0](https://ende.app/en/standard-license)).
+The video was made with [/brag](https://github.com/latent-spaces/brag). Music: "Happy Beats / Business Moves Vol. 10" by Sascha Ende, [ende.app](https://ende.app/en) ([CC BY 4.0](https://ende.app/en/standard-license)).
