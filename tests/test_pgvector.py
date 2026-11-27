@@ -101,3 +101,18 @@ def test_dense_only_mode(retriever):
         assert len(retriever.retrieve("driftglass")) == 4
     finally:
         retriever.hybrid = True
+
+
+@needs_db
+def test_query_log_writes_a_row():
+    from lorekeeper.api import PgQueryLog
+
+    qlog = PgQueryLog(DATABASE_URL)
+    before = qlog.conn.execute("SELECT count(*) FROM queries").fetchone()[0]
+    qlog.log({"question": "q?", "answer": "a [x#y].", "citations": ["x#y"], "refused": False,
+              "grounded": True, "latency_s": 1.2, "trace": ["route: lore"]})
+    row = qlog.conn.execute("SELECT question, citations, trace FROM queries ORDER BY id DESC LIMIT 1").fetchone()
+    assert row == ("q?", ["x#y"], ["route: lore"])
+    assert qlog.conn.execute("SELECT count(*) FROM queries").fetchone()[0] == before + 1
+    qlog.conn.execute("DELETE FROM queries WHERE question = 'q?' AND answer = 'a [x#y].'")
+    qlog.conn.close()

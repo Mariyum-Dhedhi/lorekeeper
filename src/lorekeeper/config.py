@@ -2,6 +2,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -43,6 +44,12 @@ class Settings(BaseSettings):
     # Where the vectors live: embedded Chroma (default, no setup) or PostgreSQL + pgvector
     vector_store: VectorStore = "chroma"
     database_url: str = "postgresql://lorekeeper:lorekeeper@127.0.0.1:5432/lorekeeper"
+
+    @field_validator("judge_provider", "checker_provider", mode="before")
+    @classmethod
+    def empty_means_unset(cls, v):
+        # `CHECKER_PROVIDER=` in .env or docker compose means "not set", not an invalid provider.
+        return None if v == "" else v
 
 
 @lru_cache
