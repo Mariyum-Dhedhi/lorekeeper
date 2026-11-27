@@ -1,6 +1,6 @@
 [project]
 name = "lorekeeper"
-version = "0.1.0"
+version = "0.2.0"
 description = "A LangGraph RAG agent that guards the archives of a fictional world, with an eval set and a quiz duel."
 readme = "README.md"
 license = "MIT"
@@ -22,10 +22,15 @@ dependencies = [
     "python-dotenv>=1.0",
     "psycopg[binary]>=3.2",
     "pgvector>=0.3",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
 ]
 
 [dependency-groups]
-dev = ["pytest>=8"]
+dev = [
+    "httpx>=0.27",
+    "pytest>=8",
+]
 
 [build-system]
 requires = ["hatchling"]

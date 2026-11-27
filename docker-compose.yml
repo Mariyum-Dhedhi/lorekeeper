@@ -1,7 +1,28 @@
-# PostgreSQL with the pgvector extension.
-#   docker compose up -d db
-# Then set VECTOR_STORE=pgvector in .env and run: uv run python -m lorekeeper.ingest
+# PostgreSQL with the pgvector extension, plus the Lorekeeper API.
+#   docker compose up -d db          # just the database (run the app with uv on the host)
+#   docker compose up --build        # database + API on http://127.0.0.1:8000/docs
+# The API uses Ollama running on the host machine.
 services:
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      VECTOR_STORE: pgvector
+      DATABASE_URL: postgresql://lorekeeper:lorekeeper@db:5432/lorekeeper
+      LLM_PROVIDER: ${LLM_PROVIDER:-ollama}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b}
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      CHECKER_PROVIDER: ${CHECKER_PROVIDER:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - models:/app/.cache          # keep the downloaded embedding model between runs
+
   db:
     image: pgvector/pgvector:pg17
     environment:
@@ -20,3 +41,4 @@ services:
 
 volumes:
   pgdata:
+  models:

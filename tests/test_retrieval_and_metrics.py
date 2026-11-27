@@ -47,3 +47,12 @@ def test_parse_score():
     assert parse_score('Sure! {"score": 0.5, "reason": "partial"} hope that helps')[0] == 0.5
     assert parse_score("score: 0")[0] == 0.0
     assert parse_score("gibberish")[0] == 0.0
+
+
+def test_empty_optional_provider_means_unset(monkeypatch):
+    from lorekeeper.config import Settings
+
+    monkeypatch.setenv("CHECKER_PROVIDER", "")
+    monkeypatch.setenv("JUDGE_PROVIDER", "")
+    s = Settings()
+    assert s.checker_provider is None and s.judge_provider is None

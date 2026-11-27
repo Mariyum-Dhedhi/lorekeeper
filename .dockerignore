@@ -1,0 +1,11 @@
+.venv
+.cache
+index
+.env
+.env.*
+**/__pycache__
+.pytest_cache
+.git
+eval/results
+eval/user_submitted.jsonl
+highscores.json
