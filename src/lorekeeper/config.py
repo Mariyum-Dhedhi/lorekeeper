@@ -16,6 +16,7 @@ USER_SUBMITTED = EVAL_DIR / "user_submitted.jsonl"
 HIGHSCORES = PROJECT_ROOT / "highscores.json"
 
 Provider = Literal["ollama", "groq"]
+VectorStore = Literal["chroma", "pgvector"]
 
 
 class Settings(BaseSettings):
@@ -38,6 +39,10 @@ class Settings(BaseSettings):
     hybrid: bool = True
     chunk_size: int = 700
     chunk_overlap: int = 100
+
+    # Where the vectors live: embedded Chroma (default, no setup) or PostgreSQL + pgvector
+    vector_store: VectorStore = "chroma"
+    database_url: str = "postgresql://lorekeeper:lorekeeper@127.0.0.1:5432/lorekeeper"
 
 
 @lru_cache

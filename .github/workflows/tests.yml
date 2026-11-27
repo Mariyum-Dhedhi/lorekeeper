@@ -20,3 +20,28 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --locked
       - run: uv run pytest -q   # fake LLM, no Ollama or API keys needed
+
+  pgvector:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      db:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: lorekeeper
+          POSTGRES_PASSWORD: lorekeeper
+          POSTGRES_DB: lorekeeper
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U lorekeeper -d lorekeeper"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://lorekeeper:lorekeeper@127.0.0.1:5432/lorekeeper
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked
+      - run: uv run pytest -q tests/test_pgvector.py   # real Postgres, hashing embedder, no model download
